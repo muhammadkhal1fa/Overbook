@@ -1,0 +1,326 @@
+# HOTEL BOOKING DATASET — EXPLORATORY DATA ANALYSIS (EDA)
+# Put H2.csv beside this file, then run: python hotel_booking_eda.py
+# Install packages first if needed:
+# pip install pandas numpy matplotlib seaborn scikit-learn scipy
+
+# ======================================================================
+# PDF EXPORT BLOCK (must stay at the very top, before pandas/seaborn)
+# Everything printed + every plot goes into one PDF instead of the screen
+# ======================================================================
+import matplotlib
+matplotlib.use("Agg")  # no windows pop up, everything goes to the PDF
+
+import sys, atexit, textwrap
+from pathlib import Path
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+PDF_PATH = Path(r"C:\Users\Omars\Downloads\hotel_eda_report.pdf")
+_pdf = PdfPages(PDF_PATH)
+_buffer = []
+_closed = False
+
+
+class _Tee:
+    """Prints to the terminal and stores the text at the same time"""
+    def __init__(self, original):
+        self.original = original
+
+    def write(self, text):
+        self.original.write(text)
+        _buffer.append(text)
+
+    def flush(self):
+        self.original.flush()
+
+    def __getattr__(self, name):  # forward anything else (encoding, isatty, ...)
+        return getattr(self.original, name)
+
+
+sys.stdout = _Tee(sys.stdout)
+
+
+def _flush_text(lines_per_page=70, width=200):
+    text = "".join(_buffer)
+    _buffer.clear()
+    if not text.strip():
+        return
+    lines = []
+    for line in text.split("\n"):
+        lines.extend(textwrap.wrap(line, width=width, drop_whitespace=False) or [""])
+    for i in range(0, len(lines), lines_per_page):
+        fig = plt.figure(figsize=(11.69, 8.27))  # A4 landscape
+        fig.text(0.03, 0.97, "\n".join(lines[i:i + lines_per_page]),
+                 family="monospace", fontsize=6, va="top", ha="left")
+        _pdf.savefig(fig)
+        plt.close(fig)
+
+
+def _show(*args, **kwargs):
+    _flush_text()  # dump any text printed before this plot
+    for num in plt.get_fignums():
+        _pdf.savefig(plt.figure(num), bbox_inches="tight")
+    plt.close("all")
+
+
+plt.show = _show
+
+
+def _finalize():
+    global _closed
+    if _closed:  # safe to call more than once
+        return
+    _closed = True
+    _flush_text()
+    _pdf.close()
+    sys.__stdout__.write(f"\nPDF saved to: {PDF_PATH}\n")
+
+
+atexit.register(_finalize)  # backup in case the script crashes midway
+# ======================================================================
+# END OF PDF EXPORT BLOCK
+# ======================================================================
+
+import warnings
+warnings.filterwarnings("ignore")
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+DATA_PATH = Path(r"C:\Users\Omars\Downloads\H2.csv")
+if not DATA_PATH.exists():
+    raise FileNotFoundError("H2.csv not found. Put it beside this script or edit DATA_PATH.")
+
+df = pd.read_csv(DATA_PATH)
+sns.set_theme(style="whitegrid")
+pd.set_option("display.max_columns", 100)
+pd.set_option("display.width", 180)
+
+print("\n=== 1. OVERVIEW ===")
+print("Shape:", df.shape)
+print("\nFirst rows:\n", df.head())
+print("\nTypes:\n", df.dtypes)
+print("\nSummary:\n", df.describe(include="all").T)
+print("\nExact duplicate rows:", df.duplicated().sum())
+
+# Missing values
+missing = pd.DataFrame({
+    "missing_count": df.isna().sum(),
+    "missing_percent": (df.isna().mean()*100).round(2),
+    "dtype": df.dtypes.astype(str)
+}).sort_values("missing_percent", ascending=False)
+print("\n=== 2. MISSING VALUES ===\n", missing)
+miss_plot = missing[missing.missing_count > 0]
+if len(miss_plot):
+    plt.figure(figsize=(11, max(4, len(miss_plot)*0.3)))
+    sns.barplot(data=miss_plot.reset_index(names="column"), x="missing_percent", y="column")
+    plt.title("Missing values by column (%)"); plt.tight_layout(); plt.show()
+
+num_cols = df.select_dtypes(include=np.number).columns.tolist()
+cat_cols = df.select_dtypes(include=["object", "category", "bool"]).columns.tolist()
+
+# Variance
+print("\n=== 3. VARIANCE / SPREAD ===")
+variance = pd.DataFrame({
+    "variance": df[num_cols].var(),
+    "std_dev": df[num_cols].std(),
+    "unique_values": df[num_cols].nunique(),
+    "min": df[num_cols].min(),
+    "max": df[num_cols].max()
+}).sort_values("variance", ascending=False)
+print(variance)
+print("\nConstant columns:", df.columns[df.nunique(dropna=False) <= 1].tolist())
+print("Low-cardinality columns (inspect, not automatically remove):",
+      df.columns[df.nunique(dropna=False) <= 2].tolist())
+
+# Numeric distributions and outliers
+print("\n=== 4. NUMERIC DISTRIBUTIONS AND OUTLIERS ===")
+for c in num_cols:
+    fig, axes = plt.subplots(1, 2, figsize=(11, 3.5))
+    sns.histplot(df[c].dropna(), bins=40, kde=df[c].nunique() > 10, ax=axes[0])
+    axes[0].set_title(f"Distribution: {c}")
+    sns.boxplot(x=df[c], ax=axes[1])
+    axes[1].set_title(f"Boxplot: {c}")
+    plt.tight_layout(); plt.show()
+
+outliers = []
+for c in num_cols:
+    s = df[c].dropna()
+    if s.nunique() <= 2 or s.empty: continue
+    q1, q3 = s.quantile([.25, .75]); iqr = q3-q1
+    lo, hi = q1-1.5*iqr, q3+1.5*iqr
+    count = int(((s < lo) | (s > hi)).sum())
+    outliers.append([c, lo, hi, count, round(count/len(s)*100, 2)])
+print("\nIQR outlier summary (outliers need investigation, not automatic deletion):")
+print(pd.DataFrame(outliers, columns=["feature","lower_bound","upper_bound","count","percent"]).sort_values("percent", ascending=False))
+
+# Categorical distributions
+print("\n=== 5. CATEGORICAL DISTRIBUTIONS ===")
+for c in cat_cols:
+    counts = df[c].astype("string").fillna("<MISSING>").value_counts().head(20)
+    print(f"\n{c}:\n{counts}")
+    plt.figure(figsize=(10, max(3.5, min(7, len(counts)*.3))))
+    sns.barplot(x=counts.values, y=counts.index)
+    plt.title(f"Top categories: {c}"); plt.xlabel("Count"); plt.tight_layout(); plt.show()
+
+# Correlation: Pearson and Spearman
+print("\n=== 6. NUMERIC CORRELATION ===")
+pearson = df[num_cols].corr(method="pearson")
+spearman = df[num_cols].corr(method="spearman")
+print("\nPearson correlation:\n", pearson.round(3))
+print("\nSpearman correlation:\n", spearman.round(3))
+for name, matrix in [("Pearson", pearson), ("Spearman", spearman)]:
+    plt.figure(figsize=(max(10, len(num_cols)*.55), max(8, len(num_cols)*.5)))
+    sns.heatmap(matrix, cmap="coolwarm", center=0, vmin=-1, vmax=1,
+                annot=len(num_cols) <= 18, fmt=".2f", square=True)
+    plt.title(f"{name} correlation heatmap"); plt.tight_layout(); plt.show()
+
+pairs = pearson.where(np.triu(np.ones(pearson.shape), k=1).astype(bool)).stack().reset_index()
+pairs.columns = ["feature_1","feature_2","correlation"]
+pairs["absolute_correlation"] = pairs.correlation.abs()
+print("\nStrongest numeric correlation pairs:\n",
+      pairs.sort_values("absolute_correlation", ascending=False).head(30).to_string(index=False))
+
+# Categorical associations: Cramer's V
+print("\n=== 7. CATEGORICAL ASSOCIATIONS (CRAMER'S V) ===")
+from scipy.stats import chi2_contingency
+def cramers_v(x, y):
+    tab = pd.crosstab(x.fillna("<MISSING>").astype(str), y.fillna("<MISSING>").astype(str))
+    if min(tab.shape) < 2: return np.nan
+    chi2 = chi2_contingency(tab, correction=False)[0]
+    n = tab.to_numpy().sum(); r, k = tab.shape
+    phi2 = chi2/n
+    # Bias-corrected Cramer's V
+    phi2_corr = max(0, phi2 - ((k-1)*(r-1))/max(n-1, 1))
+    r_corr = r - (r-1)**2/max(n-1, 1)
+    k_corr = k - (k-1)**2/max(n-1, 1)
+    denom = min(k_corr-1, r_corr-1)
+    return np.sqrt(phi2_corr/denom) if denom > 0 else np.nan
+
+cat_assoc = [c for c in cat_cols if 2 <= df[c].nunique(dropna=False) <= 30]
+if len(cat_assoc) >= 2:
+    cv = pd.DataFrame(index=cat_assoc, columns=cat_assoc, dtype=float)
+    for a in cat_assoc:
+        for b in cat_assoc:
+            cv.loc[a,b] = 1.0 if a == b else cramers_v(df[a], df[b])
+    print(cv.round(3))
+    plt.figure(figsize=(max(8,len(cat_assoc)*.6), max(6,len(cat_assoc)*.5)))
+    sns.heatmap(cv.astype(float), cmap="viridis", vmin=0, vmax=1,
+                annot=len(cat_assoc) <= 15, fmt=".2f")
+    plt.title("Categorical association (Cramér's V)"); plt.tight_layout(); plt.show()
+
+# Target analysis
+print("\n=== 8. TARGET ANALYSIS ===")
+if "IsCanceled" in df:
+    print("IsCanceled counts:\n", df["IsCanceled"].value_counts(dropna=False))
+    print("IsCanceled percentages:\n", (df["IsCanceled"].value_counts(normalize=True)*100).round(2))
+    plt.figure(figsize=(5,4)); sns.countplot(data=df, x="IsCanceled")
+    plt.title("Cancellation target distribution"); plt.tight_layout(); plt.show()
+
+    # Cancellation rate across low-cardinality categorical features
+    for c in cat_cols:
+        if c != "IsCanceled" and df[c].nunique(dropna=True) <= 25:
+            rates = df.groupby(c, dropna=False)["IsCanceled"].mean().sort_values(ascending=False)
+            plt.figure(figsize=(10, max(3.5, len(rates)*.28)))
+            sns.barplot(x=rates.values, y=rates.index.astype(str))
+            plt.title(f"Cancellation rate by {c}"); plt.xlabel("Mean IsCanceled (rate if coded 0/1)")
+            plt.tight_layout(); plt.show()
+
+    # Numeric feature differences by cancellation outcome
+    for c in num_cols:
+        if c != "IsCanceled" and df[c].nunique() > 1:
+            plt.figure(figsize=(8,4)); sns.boxplot(data=df, x="IsCanceled", y=c)
+            plt.title(f"{c} by IsCanceled"); plt.tight_layout(); plt.show()
+
+if "ADR" in df:
+    plt.figure(figsize=(8,4)); sns.histplot(df["ADR"].dropna(), bins=50, kde=True)
+    plt.title("ADR distribution"); plt.tight_layout(); plt.show()
+    for c in num_cols:
+        if c != "ADR" and df[c].nunique() > 1:
+            plt.figure(figsize=(7,4)); sns.scatterplot(data=df, x=c, y="ADR", alpha=.25, s=12)
+            plt.title(f"ADR vs {c}"); plt.tight_layout(); plt.show()
+    for c in cat_cols:
+        if df[c].nunique(dropna=True) <= 25:
+            means = df.groupby(c, dropna=False)["ADR"].mean().sort_values(ascending=False)
+            plt.figure(figsize=(10, max(3.5, len(means)*.28)))
+            sns.barplot(x=means.values, y=means.index.astype(str))
+            plt.title(f"Mean ADR by {c}"); plt.xlabel("Mean ADR")
+            plt.tight_layout(); plt.show()
+
+# Arrival date features
+print("\n=== 9. ARRIVAL DATE FEATURES ===")
+for c in ["ArrivalDateYear","ArrivalDateMonth","ArrivalDateWeekNumber","ArrivalDateDayOfMonth"]:
+    if c in df:
+        plt.figure(figsize=(10,4))
+        if c == "ArrivalDateMonth":
+            month_order = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+            order = [m for m in month_order if m in df[c].dropna().unique()]
+            sns.countplot(data=df, x=c, order=order)
+        else:
+            sns.countplot(data=df, x=c)
+        plt.title(f"Bookings by {c}"); plt.xticks(rotation=45); plt.tight_layout(); plt.show()
+
+if "ArrivalDateWeekNumber" in df:
+    if "ADR" in df:
+        weekly = df.groupby("ArrivalDateWeekNumber")["ADR"].mean()
+        plt.figure(figsize=(11,4)); weekly.plot(marker="o")
+        plt.title("Mean ADR by arrival week"); plt.xlabel("Week number"); plt.ylabel("Mean ADR")
+        plt.tight_layout(); plt.show()
+    if "IsCanceled" in df:
+        weekly = df.groupby("ArrivalDateWeekNumber")["IsCanceled"].mean()
+        plt.figure(figsize=(11,4)); weekly.plot(marker="o")
+        plt.title("Cancellation rate by arrival week"); plt.xlabel("Week number"); plt.ylabel("Cancellation rate")
+        plt.tight_layout(); plt.show()
+
+# Mutual information: detects some nonlinear relationships, exploratory only
+print("\n=== 10. MUTUAL INFORMATION (OPTIONAL) ===")
+from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
+from sklearn.preprocessing import OrdinalEncoder
+def mutual_info_ranking(data, target):
+    X = data.drop(columns=[target]).copy()
+    # Potential post-outcome leakage for cancellation prediction
+    if target == "IsCanceled":
+        leak = [c for c in ["ReservationStatus", "ReservationStatusDate"] if c in X]
+        X = X.drop(columns=leak)
+        if leak: print("Excluded likely leakage fields for IsCanceled MI:", leak)
+    cat = X.select_dtypes(include=["object","category","bool"]).columns.tolist()
+    for c in cat:
+        X[c] = X[c].astype("string").fillna("<MISSING>")
+    if cat:
+        X[cat] = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1).fit_transform(X[cat].astype(str))
+    X = X.replace([np.inf,-np.inf], np.nan)
+    for c in X:
+        X[c] = X[c].fillna(X[c].median())
+    if len(X) > 20000:
+        X = X.sample(20000, random_state=42)
+    y = data.loc[X.index, target]
+    good = y.notna()
+    X, y = X.loc[good], y.loc[good]
+    discrete = [X[c].nunique() < 15 for c in X.columns]
+    if target == "IsCanceled":
+        score = mutual_info_classif(X, y.astype(int), discrete_features=discrete, random_state=42)
+    else:
+        score = mutual_info_regression(X, y.astype(float), discrete_features=discrete, random_state=42)
+    return pd.Series(score, index=X.columns).sort_values(ascending=False)
+for target in ["IsCanceled","ADR"]:
+    if target in df:
+        try:
+            mi = mutual_info_ranking(df, target)
+            print(f"\nMutual information ranking for {target}:\n", mi)
+            plt.figure(figsize=(10,max(5,len(mi)*.28)))
+            sns.barplot(x=mi.values, y=mi.index)
+            plt.title(f"Mutual information with {target} (not causal)")
+            plt.tight_layout(); plt.show()
+        except Exception as e:
+            print("Mutual information failed for", target, ":", e)
+
+print("\n=== IMPORTANT INTERPRETATION NOTES ===")
+print("* Correlation is association, not causation.")
+print("* Raw variance depends on feature units; do not compare it blindly across columns.")
+print("* Outliers are not automatically errors.")
+print("* For cancellation prediction, ReservationStatus and ReservationStatusDate can leak the outcome.")
+print("* Fit imputers/encoders/scalers using training data only when building predictive models.")
+print("\nEDA complete.")
+
+# Close the PDF and write it to disk (must be the last line)
+_finalize()
