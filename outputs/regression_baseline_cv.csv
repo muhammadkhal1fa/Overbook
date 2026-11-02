@@ -1,0 +1,5 @@
+model,cv_MAE,cv_RMSE,cv_R2,cv_R2_std,fit_time_s
+Mean predictor (reference),30.562,39.474,-0.0,0.001,0.167
+Ridge,14.515,20.731,0.724,0.004,0.199
+Random Forest,8.768,15.493,0.846,0.007,5.325
+XGBoost,9.669,15.389,0.848,0.005,1.399
