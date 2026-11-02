@@ -1,0 +1,794 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+
+    <meta charset="UTF-8">
+
+    <title>Hotel Booking Cleaning Report</title>
+
+    <style>
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 35px;
+        background: #f5f6fa;
+        color: #252525;
+    }
+
+    h1 {
+        color: #183153;
+    }
+
+    h2 {
+        color: #245b87;
+        margin-top: 35px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px #ddd;
+    }
+
+    .data-table {
+        border-collapse: collapse;
+        width: 100%;
+        background: white;
+        font-size: 13px;
+    }
+
+    .data-table th,
+    .data-table td {
+        border: 1px solid #ddd;
+        padding: 9px;
+        text-align: left;
+    }
+
+    .data-table th {
+        background: #245b87;
+        color: white;
+    }
+
+    .data-table tr:nth-child(even) {
+        background: #f2f5f8;
+    }
+
+    img {
+        max-width: 100%;
+        margin: 15px 0;
+        border-radius: 8px;
+    }
+
+    </style>
+    </head>
+
+    <body>
+
+    <h1>Hotel Booking Dataset</h1>
+    <h2>Cleaning and Statistical Analysis Report</h2>
+
+    <div class="card">
+
+    <h2>1. Dataset Overview</h2>
+
+    <p><b>Original rows:</b> 79,330</p>
+
+    <p><b>Cleaned rows:</b> 52,320</p>
+
+    <p><b>Original columns:</b> 31</p>
+
+    <p><b>Removed rows:</b> 27,010</p>
+
+    <p><b>Remaining percentage:</b>
+    65.95%</p>
+
+    </div>
+
+    <div class="card">
+
+    <h2>2. Cleaning Operations</h2>
+
+    <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Cleaning Operation</th>
+      <th>Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>rows_raw</td>
+      <td>79330</td>
+    </tr>
+    <tr>
+      <td>columns_raw</td>
+      <td>31</td>
+    </tr>
+    <tr>
+      <td>children_missing_filled</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>duplicates_removed</td>
+      <td>25902</td>
+    </tr>
+    <tr>
+      <td>rows_after_duplicates</td>
+      <td>53428</td>
+    </tr>
+    <tr>
+      <td>zero_guest_rows_removed</td>
+      <td>154</td>
+    </tr>
+    <tr>
+      <td>zero_night_rows_removed</td>
+      <td>231</td>
+    </tr>
+    <tr>
+      <td>rows_after_invalid_removed</td>
+      <td>53043</td>
+    </tr>
+    <tr>
+      <td>rows_before_adr_filter</td>
+      <td>53043</td>
+    </tr>
+    <tr>
+      <td>zero_or_negative_adr_removed</td>
+      <td>722</td>
+    </tr>
+    <tr>
+      <td>extreme_adr_removed</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>rows_for_regression</td>
+      <td>52320</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <div class="card">
+
+    <h2>3. Missing Values Comparison</h2>
+
+    <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Feature</th>
+      <th>Missing Before</th>
+      <th>Missing After</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>IsCanceled</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>LeadTime</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ArrivalDateYear</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ArrivalDateMonth</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ArrivalDateWeekNumber</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ArrivalDateDayOfMonth</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>StaysInWeekendNights</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>StaysInWeekNights</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Adults</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Children</td>
+      <td>4</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Babies</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Meal</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Country</td>
+      <td>24</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>MarketSegment</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>DistributionChannel</td>
+      <td>4</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>IsRepeatedGuest</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>PreviousCancellations</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>PreviousBookingsNotCanceled</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ReservedRoomType</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>AssignedRoomType</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>BookingChanges</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>DepositType</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Agent</td>
+      <td>8131</td>
+      <td>5013</td>
+    </tr>
+    <tr>
+      <td>Company</td>
+      <td>75641</td>
+      <td>49839</td>
+    </tr>
+    <tr>
+      <td>DaysInWaitingList</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>CustomerType</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ADR</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>RequiredCarParkingSpaces</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>TotalOfSpecialRequests</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ReservationStatus</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>ReservationStatusDate</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <div class="card">
+
+    <h2>4. Numerical Statistical Analysis</h2>
+
+    <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+      <th>missing</th>
+      <th>missing_percent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>IsCanceled</th>
+      <td>52320.0</td>
+      <td>0.305</td>
+      <td>0.460</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>LeadTime</th>
+      <td>52320.0</td>
+      <td>78.638</td>
+      <td>82.009</td>
+      <td>0.0</td>
+      <td>14.0</td>
+      <td>52.00</td>
+      <td>119.0</td>
+      <td>629.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>ArrivalDateYear</th>
+      <td>52320.0</td>
+      <td>2016.260</td>
+      <td>0.656</td>
+      <td>2015.0</td>
+      <td>2016.0</td>
+      <td>2016.00</td>
+      <td>2017.0</td>
+      <td>2017.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>ArrivalDateWeekNumber</th>
+      <td>52320.0</td>
+      <td>26.593</td>
+      <td>13.558</td>
+      <td>1.0</td>
+      <td>16.0</td>
+      <td>27.00</td>
+      <td>37.0</td>
+      <td>53.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>ArrivalDateDayOfMonth</th>
+      <td>52320.0</td>
+      <td>15.770</td>
+      <td>8.802</td>
+      <td>1.0</td>
+      <td>8.0</td>
+      <td>16.00</td>
+      <td>23.0</td>
+      <td>31.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>StaysInWeekendNights</th>
+      <td>52320.0</td>
+      <td>0.881</td>
+      <td>0.904</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>10.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>StaysInWeekNights</th>
+      <td>52320.0</td>
+      <td>2.293</td>
+      <td>1.581</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>2.00</td>
+      <td>3.0</td>
+      <td>25.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>Adults</th>
+      <td>52320.0</td>
+      <td>1.889</td>
+      <td>0.533</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>2.00</td>
+      <td>2.0</td>
+      <td>4.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>Children</th>
+      <td>52320.0</td>
+      <td>0.133</td>
+      <td>0.444</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>Babies</th>
+      <td>52320.0</td>
+      <td>0.007</td>
+      <td>0.102</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>IsRepeatedGuest</th>
+      <td>52320.0</td>
+      <td>0.026</td>
+      <td>0.158</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PreviousCancellations</th>
+      <td>52320.0</td>
+      <td>0.033</td>
+      <td>0.364</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>21.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PreviousBookingsNotCanceled</th>
+      <td>52320.0</td>
+      <td>0.167</td>
+      <td>1.960</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>72.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>BookingChanges</th>
+      <td>52320.0</td>
+      <td>0.240</td>
+      <td>0.677</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>18.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>DaysInWaitingList</th>
+      <td>52320.0</td>
+      <td>1.029</td>
+      <td>11.990</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>391.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>ADR</th>
+      <td>52320.0</td>
+      <td>113.198</td>
+      <td>39.532</td>
+      <td>0.5</td>
+      <td>85.0</td>
+      <td>106.25</td>
+      <td>135.0</td>
+      <td>510.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>RequiredCarParkingSpaces</th>
+      <td>52320.0</td>
+      <td>0.035</td>
+      <td>0.186</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>TotalOfSpecialRequests</th>
+      <td>52320.0</td>
+      <td>0.711</td>
+      <td>0.831</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.00</td>
+      <td>1.0</td>
+      <td>5.0</td>
+      <td>0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <div class="card">
+
+    <h2>5. Categorical Statistical Analysis</h2>
+
+    <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Feature</th>
+      <th>Unique Values</th>
+      <th>Missing Values</th>
+      <th>Missing %</th>
+      <th>Most Frequent</th>
+      <th>Most Frequent Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ArrivalDateMonth</td>
+      <td>12</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>August</td>
+      <td>6477</td>
+    </tr>
+    <tr>
+      <td>Meal</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>BB</td>
+      <td>40352</td>
+    </tr>
+    <tr>
+      <td>Country</td>
+      <td>166</td>
+      <td>3</td>
+      <td>0.01</td>
+      <td>PRT</td>
+      <td>12306</td>
+    </tr>
+    <tr>
+      <td>MarketSegment</td>
+      <td>7</td>
+      <td>2</td>
+      <td>0.00</td>
+      <td>Online TA</td>
+      <td>34806</td>
+    </tr>
+    <tr>
+      <td>DistributionChannel</td>
+      <td>4</td>
+      <td>4</td>
+      <td>0.01</td>
+      <td>TA/TO</td>
+      <td>44052</td>
+    </tr>
+    <tr>
+      <td>ReservedRoomType</td>
+      <td>7</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>A</td>
+      <td>37127</td>
+    </tr>
+    <tr>
+      <td>AssignedRoomType</td>
+      <td>8</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>A</td>
+      <td>32874</td>
+    </tr>
+    <tr>
+      <td>DepositType</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>No Deposit</td>
+      <td>51461</td>
+    </tr>
+    <tr>
+      <td>Agent</td>
+      <td>222</td>
+      <td>5013</td>
+      <td>9.58</td>
+      <td>9</td>
+      <td>28638</td>
+    </tr>
+    <tr>
+      <td>Company</td>
+      <td>200</td>
+      <td>49839</td>
+      <td>95.26</td>
+      <td>40</td>
+      <td>840</td>
+    </tr>
+    <tr>
+      <td>CustomerType</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>Transient</td>
+      <td>43783</td>
+    </tr>
+    <tr>
+      <td>ReservationStatus</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>Check-Out</td>
+      <td>36382</td>
+    </tr>
+    <tr>
+      <td>ReservationStatusDate</td>
+      <td>864</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>2015-10-21</td>
+      <td>156</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <div class="card">
+
+    <h2>6. ADR Statistical Analysis</h2>
+
+    <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ADR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>52320.000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>113.198</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>39.532</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>0.500</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>85.000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>106.250</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>135.000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>510.000</td>
+    </tr>
+  </tbody>
+</table>
+
+    <p>
+    Mean: 113.198<br>
+    Median: 106.250<br>
+    Standard deviation: 39.532<br>
+    Minimum: 0.500<br>
+    Maximum: 510.000
+    </p>
+
+    </div>
+
+    <div class="card">
+
+    <h2>7. ADR Distribution</h2>
+
+    <img src="adr_distribution.png">
+
+    <h2>8. ADR Outlier Analysis</h2>
+
+    <img src="adr_boxplot.png">
+
+    </div>
+
+    <div class="card">
+
+    <h2>9. Feature Correlations</h2>
+
+    <img src="correlation_heatmap.png">
+
+    </div>
+
+    <p>Generated automatically using Python.</p>
+
+    </body>
+    </html>
+    
