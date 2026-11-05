@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+H2.csv
+.pytest_cache/

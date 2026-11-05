@@ -1,0 +1,29 @@
+{
+  "task": "classification",
+  "target": "IsCanceled",
+  "generated_at": "2026-11-05T23:49:18.213379+00:00",
+  "models": {
+    "logistic_classifier": {
+      "artifact": "logistic_classifier.joblib",
+      "sha256": "50e037915ee9ad97f28116faef36738f87ab24ca6e43c36d5e15ba8ee0e2ab86",
+      "algorithm": "LogisticRegression (binary classifier)",
+      "threshold": 0.49,
+      "features": 34,
+      "rows": 79330,
+      "split_sizes": {
+        "train": 47226,
+        "val": 16130,
+        "test": 15974
+      },
+      "sklearn_version": "1.7.2",
+      "validation_f1_tuned": 0.7675,
+      "test_accuracy": 0.8158257167897834,
+      "test_precision": 0.7762227876731693,
+      "test_recall": 0.8016058394160583,
+      "test_f1": 0.7887101407641482,
+      "test_roc_auc": 0.9036901074250313,
+      "test_pr_auc": 0.8899226565643819,
+      "data_sha256": "6796f5b9b2b9e7281662b29730fc2880f8e614107d0d14d09be2ede1a6e605a4"
+    }
+  }
+}
